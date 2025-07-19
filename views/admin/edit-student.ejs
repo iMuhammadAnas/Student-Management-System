@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Edit Student</title>
+  <style>
+    body {
+      font-family: "Segoe UI", sans-serif;
+      background: #f0f2f5;
+      margin: 0;
+      padding: 0;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 40px auto;
+      background: #ffffff;
+      padding: 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 25px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      color: #2c3e50;
+      margin-bottom: 30px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 18px;
+    }
+
+    label {
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      font-size: 15px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      box-sizing: border-box;
+    }
+
+    .btn-group {
+      display: flex;
+      justify-content: space-between;
+      gap: 15px;
+      margin-top: 25px;
+    }
+
+    button {
+      flex: 1;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      transition: background 0.2s ease;
+    }
+
+    .btn-update {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-update:hover {
+      background: #2980b9;
+    }
+
+    .btn-delete {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #c0392b;
+    }
+
+    .back-link {
+      text-align: center;
+      margin-top: 25px;
+    }
+
+    .back-link a {
+      text-decoration: none;
+      color: #3498db;
+      font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        padding: 25px;
+        margin: 20px;
+      }
+
+      .btn-group {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Edit Student</h1>
+
+    <form method="POST" action="/admin/students/<%= student.id %>">
+      <div>
+        <label>Full Name</label>
+        <input type="text" name="fullname" value="<%= student.fullname %>" required />
+      </div>
+
+      <div>
+        <label>Username</label>
+        <input type="text" name="username" value="<%= student.username %>" required />
+      </div>
+
+      <div>
+        <label>Email</label>
+        <input type="email" name="email" value="<%= student.email %>" required />
+      </div>
+
+      <div>
+        <label>Password (leave blank to keep unchanged)</label>
+        <input type="password" name="password" />
+      </div>
+
+      <div>
+        <label>Course</label>
+        <select name="course" required>
+          <option value="" disabled>Select a course</option>
+          <% courses.forEach(course => { %>
+            <option value="<%= course %>" <%= course === student.course ? 'selected' : '' %>><%= course %></option>
+          <% }) %>
+        </select>
+      </div>
+
+      <div>
+        <label>Absences</label>
+        <input type="number" name="absences" min="0" value="<%= student.absences || 0 %>" />
+      </div>
+
+      <div class="btn-group">
+        <button type="submit" class="btn-update">Update Student</button>
+      </div>
+      </form>
+      
+      <form method="POST" action="/admin/students/<%= student.id %>/delete" onsubmit="return confirm('Are you sure you want to delete this student?');" style="margin-top: 15px; text-align: center;">
+        <button type="submit" class="btn-delete">Delete Student</button>
+      </form>
+      
+    </form>
+
+    <div class="back-link">
+      <a href="/admin/dashboard">← Back to Dashboard</a>
+    </div>
+  </div>
+</body>
+</html>

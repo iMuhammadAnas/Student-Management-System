@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add New Student</title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #eef1f5;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 600px;
+        margin: 40px auto;
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 10px;
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+      }
+
+      form {
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      label {
+        font-weight: 600;
+        margin-bottom: 5px;
+        display: block;
+      }
+
+      input,
+      select {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+        font-size: 15px;
+        box-sizing: border-box;
+      }
+
+      button {
+        background: #2ecc71;
+        color: white;
+        border: none;
+        padding: 14px;
+        font-size: 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: background 0.2s;
+      }
+
+      button:hover {
+        background: #27ae60;
+      }
+
+      .back-link {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .back-link a {
+        text-decoration: none;
+        color: #3498db;
+        font-weight: 600;
+      }
+
+      .error {
+        color: red;
+        text-align: center;
+        font-size: 14px;
+      }
+
+      @media (max-width: 600px) {
+        .container {
+          margin: 20px;
+          padding: 25px;
+        }
+
+        h1 {
+          font-size: 22px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Add New Student</h1>
+
+      <% if (error) { %>
+      <div class="error"><%= error %></div>
+      <% } %>
+
+      <form method="POST" action="/admin/add-student">
+        <div>
+          <label>Full Name</label>
+          <input type="text" name="fullname" required />
+        </div>
+
+        <div>
+          <label>Username</label>
+          <input type="text" name="username" required />
+        </div>
+
+        <div>
+          <label>Email</label>
+          <input type="email" name="email" required />
+        </div>
+
+        <div>
+          <label>Password</label>
+          <input type="password" name="password" required />
+        </div>
+
+        <div>
+          <label>Course</label>
+          <select name="course" required>
+            <option value="" disabled selected>-- Select Course --</option>
+            <% courses.forEach(course => { %>
+            <option value="<%= course %>"><%= course %></option>
+            <% }) %>
+          </select>
+        </div>
+
+        <button type="submit">Create Student</button>
+      </form>
+
+      <div class="back-link">
+        <a href="/admin/dashboard">← Back to Dashboard</a>
+      </div>
+    </div>
+  </body>
+</html>

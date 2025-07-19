@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Course Details - <%= courseName %></title>
+    <style>
+      body {
+        font-family: "Segoe UI", sans-serif;
+        background: #f4f6f9;
+        margin: 0;
+        padding: 0;
+      }
+
+      .container {
+        max-width: 1000px;
+        margin: 40px auto;
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      }
+
+      h1 {
+        text-align: center;
+        color: #2c3e50;
+        margin-bottom: 30px;
+      }
+
+      .back-link {
+        margin-bottom: 20px;
+        display: inline-block;
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        text-align: center;
+        border: 1px solid #ccc;
+      }
+
+      th {
+        background-color: #3498db;
+        color: white;
+      }
+
+      tr:hover {
+        background-color: #f9f9f9;
+      }
+
+      .view-link {
+        text-decoration: none;
+        background: #2980b9;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 4px;
+      }
+
+      .view-link:hover {
+        background: #1c6391;
+      }
+
+      @media (max-width: 600px) {
+        table,
+        th,
+        td {
+          font-size: 14px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
+
+      <h1>Course: <%= courseName %></h1>
+
+      <% if (students.length > 0) { %>
+      <table>
+        <thead>
+          <tr>
+            <th>Full Name</th>
+            <th>Username</th>
+            <th>Email</th>
+            <th>Tests Given</th>
+            <th>Total Marks</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% students.forEach(student => { const totalMarks =
+          student.tests?.reduce((sum, t) => sum + t.marks, 0) || 0; %>
+          <tr>
+            <td><%= student.fullname %></td>
+            <td><%= student.username %></td>
+            <td><%= student.email %></td>
+            <td><%= student.tests?.length || 0 %></td>
+            <td><%= totalMarks %></td>
+            <td>
+              <a href="/admin/students/<%= student.id %>" class="view-link"
+                >View / Edit</a
+              >
+            </td>
+          </tr>
+          <% }) %>
+        </tbody>
+      </table>
+      <% } else { %>
+      <p>No students enrolled in this course.</p>
+      <% } %>
+    </div>
+  </body>
+</html>
