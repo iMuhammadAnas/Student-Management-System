@@ -36,6 +36,34 @@
     "absences": 5
   },
   {
+    "id": "u007",
+    "fullname": "Muhammad Anas",
+    "username": "anas",
+    "email": "ianasnaseem@gmail.com",
+    "password": "anas321",
+    "role": "user",
+    "course": "Web Development",
+    "tests": [
+      {
+        "name": "HTML Basics",
+        "marks": 85
+      },
+      {
+        "name": "CSS",
+        "marks": 72
+      },
+      {
+        "name": "JavaScript",
+        "marks": 78
+      },
+      {
+        "name": "Node.js",
+        "marks": 80
+      }
+    ],
+    "absences": 5
+  },
+  {
     "id": "u002",
     "fullname": "Ayesha Khan",
     "username": "ayesha",
