@@ -23,7 +23,8 @@ app.use(express.static(path.join(__dirname, "public")));
 
 // Read/write users
 const getUsers = () => JSON.parse(fs.readFileSync(usersFile));
-const saveUsers = (users) => fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
+const saveUsers = (users) =>
+  fs.writeFileSync(usersFile, JSON.stringify(users, null, 2));
 
 // Courses for selection
 const courseList = [
@@ -41,8 +42,8 @@ async function sendOtpEmail(email, otp) {
   const transporter = nodemailer.createTransport({
     service: "gmail",
     auth: {
-      user: "anasnaseem420@gmail.com", // Your Gmail
-      pass: "ximt mdea bpin pfio", // App Password from Gmail
+      user: "anasnaseem420@gmail.com",
+      pass: "ximt mdea bpin pfio",
     },
   });
 
@@ -54,6 +55,22 @@ async function sendOtpEmail(email, otp) {
   });
 }
 
+// 🔒 Middleware: redirect if already logged in
+function redirectIfLoggedIn(req, res, next) {
+  const token = req.cookies.token;
+  if (token) {
+    try {
+      const user = authenticateToken(token);
+      const redirectTo =
+        user.role === "admin" ? "/admin/dashboard" : "/student/profile";
+      return res.redirect(redirectTo);
+    } catch (err) {
+      // Token invalid, continue to requested page
+    }
+  }
+  next();
+}
+
 // Home
 app.get("/", (req, res) => {
   const token = req.cookies.token;
@@ -61,20 +78,16 @@ app.get("/", (req, res) => {
 
   try {
     const user = authenticateToken(token);
-    return res.redirect(user.role === "admin" ? "/admin/dashboard" : "/student/profile");
+    return res.redirect(
+      user.role === "admin" ? "/admin/dashboard" : "/student/profile"
+    );
   } catch {
     return res.redirect("/login");
   }
 });
 
 // Login
-app.get("/login", (req, res) => {
-  if (req.cookies.token) {
-    try {
-      const user = authenticateToken(req.cookies.token);
-      return res.redirect(user.role === "admin" ? "/admin/dashboard" : "/student/profile");
-    } catch {}
-  }
+app.get("/login", redirectIfLoggedIn, (req, res) => {
   res.render("login", { error: null, success: null });
 });
 
@@ -83,14 +96,21 @@ app.post("/login", (req, res) => {
   const users = getUsers();
   const user = users.find(
     (u) =>
-      (u.username === username || u.email === username) && u.password === password
+      (u.username === username || u.email === username) &&
+      u.password === password
   );
 
-  if (!user) return res.render("login", { error: "Invalid credentials", success: null });
+  if (!user)
+    return res.render("login", {
+      error: "Invalid credentials",
+      success: null,
+    });
 
   const token = generateToken(user);
   res.cookie("token", token, { httpOnly: true });
-  return res.redirect(user.role === "admin" ? "/admin/dashboard" : "/student/profile");
+  return res.redirect(
+    user.role === "admin" ? "/admin/dashboard" : "/student/profile"
+  );
 });
 
 app.get("/logout", (req, res) => {
@@ -99,17 +119,20 @@ app.get("/logout", (req, res) => {
 });
 
 // 🔁 Forgot Password Flow
-app.get("/forgot-password", (req, res) => {
+app.get("/forgot-password", redirectIfLoggedIn, (req, res) => {
   res.render("auth/forgot-password", { error: null, success: null });
 });
 
-app.post("/forgot-password", async (req, res) => {
+app.post("/forgot-password", redirectIfLoggedIn, async (req, res) => {
   const { email } = req.body;
   const users = getUsers();
   const user = users.find((u) => u.email === email);
 
   if (!user) {
-    return res.render("auth/forgot-password", { error: "Email not found", success: null });
+    return res.render("auth/forgot-password", {
+      error: "Email not found",
+      success: null,
+    });
   }
 
   const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -124,7 +147,7 @@ app.post("/forgot-password", async (req, res) => {
   res.render("auth/verify-otp", { email, error: null });
 });
 
-app.post("/verify-otp", (req, res) => {
+app.post("/verify-otp", redirectIfLoggedIn, (req, res) => {
   const { email, otp } = req.body;
   const saved = otps[email];
 
@@ -138,7 +161,7 @@ app.post("/verify-otp", (req, res) => {
   res.render("auth/reset-password", { email, error: null });
 });
 
-app.post("/reset-password", (req, res) => {
+app.post("/reset-password", redirectIfLoggedIn, (req, res) => {
   const { email, password, confirmPassword } = req.body;
   const users = getUsers();
   const index = users.findIndex((u) => u.email === email);
@@ -168,57 +191,74 @@ app.post("/reset-password", (req, res) => {
 });
 
 // 🛠 Admin Routes
-app.get("/admin/dashboard", authenticate, authorizeRole("admin"), (req, res) => {
-  const users = getUsers();
-  const students = users.filter((u) => u.role === "user");
-  res.render("admin/dashboard", {
-    admin: req.user,
-    students,
-    courses: courseList,
-    totalStudents: students.length,
-  });
-});
+app.get(
+  "/admin/dashboard",
+  authenticate,
+  authorizeRole("admin"),
+  (req, res) => {
+    const users = getUsers();
+    const students = users.filter((u) => u.role === "user");
+    res.render("admin/dashboard", {
+      admin: req.user,
+      students,
+      courses: courseList,
+      totalStudents: students.length,
+    });
+  }
+);
 
-app.get("/admin/add-student", authenticate, authorizeRole("admin"), (req, res) => {
-  res.render("admin/add-student", {
-    error: null,
-    courses: courseList,
-  });
-});
-
-app.post("/admin/add-student", authenticate, authorizeRole("admin"), (req, res) => {
-  const users = getUsers();
-  const { fullname, username, email, password, course } = req.body;
-
-  const existingUser = users.find((u) => u.username === username || u.email === email);
-  if (existingUser) {
-    const error =
-      existingUser.username === username
-        ? "Username already taken"
-        : "Email already taken";
-
-    return res.render("admin/add-student", {
-      error,
+app.get(
+  "/admin/add-student",
+  authenticate,
+  authorizeRole("admin"),
+  (req, res) => {
+    res.render("admin/add-student", {
+      error: null,
       courses: courseList,
     });
   }
+);
 
-  const newUser = {
-    id: uuidv4(),
-    fullname,
-    username,
-    email,
-    password,
-    course,
-    role: "user",
-    absences: 0,
-    tests: [],
-  };
+app.post(
+  "/admin/add-student",
+  authenticate,
+  authorizeRole("admin"),
+  (req, res) => {
+    const users = getUsers();
+    const { fullname, username, email, password, course } = req.body;
 
-  users.push(newUser);
-  saveUsers(users);
-  res.redirect("/admin/dashboard");
-});
+    const existingUser = users.find(
+      (u) => u.username === username || u.email === email
+    );
+    if (existingUser) {
+      const error =
+        existingUser.username === username
+          ? "Username already taken"
+          : "Email already taken";
+
+      return res.render("admin/add-student", {
+        error,
+        courses: courseList,
+      });
+    }
+
+    const newUser = {
+      id: uuidv4(),
+      fullname,
+      username,
+      email,
+      password,
+      course,
+      role: "user",
+      absences: 0,
+      tests: [],
+    };
+
+    users.push(newUser);
+    saveUsers(users);
+    res.redirect("/admin/dashboard");
+  }
+);
 
 // 👤 Student Profile
 app.get("/student/profile", authenticate, authorizeRole("user"), (req, res) => {
