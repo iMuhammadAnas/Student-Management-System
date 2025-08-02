@@ -47,6 +47,6 @@ Designed for educational/test purposes at Baitussalam.
 
 Data is stored locally in JSON files (for example: users.json).
 
-Session-based authentication is used; no JWT or OAuth.
+Session-based authentication is used no JWT or OAuth.
 
 Clean and simple UI using EJS.
